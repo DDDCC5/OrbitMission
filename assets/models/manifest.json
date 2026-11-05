@@ -1,0 +1,59 @@
+{
+  "source": "Locally authored geometry, not a completed PICO Editor workflow delivery.",
+  "units": "Unit sphere radius for celestial GLBs; rocket dimensions are display design units, not a scale replica.",
+  "textures": "Solar System Scope / INOVE, CC BY 4.0; NASA-derived, some unmapped areas fictional.",
+  "rotation": "GLB preview clips use 24 seconds per turn for review. Runtime must apply signed physical sidereal periods with an explicit time-scale.",
+  "sunParticles": "32 emissive mesh particle nodes with scale animation, visual preview included; runtime particle engine integration remains stage 2.",
+  "bodies": [
+    {
+      "id": "sun",
+      "file": "sun.glb",
+      "siderealRotationSeconds": 2192832
+    },
+    {
+      "id": "mercury",
+      "file": "mercury.glb",
+      "siderealRotationSeconds": 5067360
+    },
+    {
+      "id": "venus",
+      "file": "venus.glb",
+      "siderealRotationSeconds": -20997000
+    },
+    {
+      "id": "earth",
+      "file": "earth.glb",
+      "siderealRotationSeconds": 86164.2
+    },
+    {
+      "id": "mars",
+      "file": "mars.glb",
+      "siderealRotationSeconds": 88560
+    },
+    {
+      "id": "jupiter",
+      "file": "jupiter.glb",
+      "siderealRotationSeconds": 35640
+    },
+    {
+      "id": "saturn",
+      "file": "saturn.glb",
+      "siderealRotationSeconds": 38520
+    },
+    {
+      "id": "uranus",
+      "file": "uranus.glb",
+      "siderealRotationSeconds": -61920
+    },
+    {
+      "id": "neptune",
+      "file": "neptune.glb",
+      "siderealRotationSeconds": 57960
+    }
+  ],
+  "rocket": {
+    "file": "crew_rocket.glb",
+    "forwardAxis": "+Y",
+    "assembly": "CoreStage, EscapeTower, four boosters, four core nozzles, booster nozzles, bands. Long March inspired original artwork."
+  }
+}

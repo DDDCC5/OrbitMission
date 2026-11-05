@@ -1,0 +1,8 @@
+{
+  "select_planet": "Please select a planet.",
+  "place_rocket": "Place the rocket on the orbit.",
+  "orbit_success": "Orbital insertion successful.",
+  "mission_failure": "Mission failed.",
+  "collision_warning": "Warning. Collision risk.",
+  "boundary_warning": "Warning. Approaching the system boundary."
+}

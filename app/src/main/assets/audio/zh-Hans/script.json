@@ -1,0 +1,8 @@
+{
+  "select_planet": "请选择一个行星。",
+  "place_rocket": "请将火箭放置在轨道上。",
+  "orbit_success": "入轨成功。",
+  "mission_failure": "任务失败。",
+  "collision_warning": "撞击警告。",
+  "boundary_warning": "飞出边界警告。"
+}
