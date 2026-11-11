@@ -57,3 +57,8 @@ Editor 经恢复项目路径、重新建立会话后，仍因官方授权提示�
 主要证据：`reports/final-tests.log`、`reports/final-validation.log`、`reports/delivery-verification.json`、`reports/runtime-captures.json`、`reports/apk-signature.txt`。
 
 源码未从 Figma 导入，JSON 设计保真检查为不适用；无 Figma 运行或截图保真分数声明。自定义界面遵循用户明确要求，组件白名单扫描对部分合法 ECS/API 和自绘控制发出建议警告，未发现禁止的 Material 组件。
+
+
+## 1.3.1 安装图标与系统名称（2026-11-05）
+
+用户确认深蓝底火箭与金色轨道符号，不含文字。替换 Android 自适应/普通图标与 PICO 空间单层纹理；保留原脚手架圆形 SDF 蒙版，移除默认前景图层。默认英文名称 Orbit Mission，中文 Hans/Hant 均显示用户指定的简体写法「轨道使命」。aapt2 检查 APK 的 zh-CN、zh-TW、zh-HK 及英文名称正确，旧前景图层不存在；构建与 APK v2 签名验证通过。此次未执行设备安装，启动器实际呈现待安装检查。

@@ -12,7 +12,7 @@ pico-cli app install app/build/outputs/apk/debug/app-debug.apk --device emulator
 pico-cli app launch com.example.orbitmission --device emulator-5554
 ```
 
-当前版本为 **1.3（versionCode 4）**。可安装 APK、源码交付包及效果录屏见 [GitHub Releases](https://github.com/DDDCC5/OrbitMission/releases)。本机构建交付文件位于 `output/OrbitMission-debug.apk`。平台需要 PICO OS 6 / Spatial 运行环境；普通 Android 手机不具备其空间运行服务。
+当前版本为 **1.3.1（versionCode 5）**。可安装 APK、源码交付包及效果录屏见 [GitHub Releases](https://github.com/DDDCC5/OrbitMission/releases)。本机构建交付文件位于 `output/OrbitMission-debug.apk`。平台需要 PICO OS 6 / Spatial 运行环境；普通 Android 手机不具备其空间运行服务。
 
 ## 操作
 
@@ -34,7 +34,7 @@ pico-cli app launch com.example.orbitmission --device emulator-5554
 
 - `app/src/test`：物理、状态机、输入仲裁、归一化体积/同比缩放/复位、眼动轨道吸附、语言与偏好单元测试，共 38 项业务测试及 1 项模板测试。
 - `app/src/androidTest`：原生 Stage 端到端任务测试，驱动正常 ViewModel 操作并等待真实场景时钟和物理积分完成一圈；不替代实体手柄与眼动验证。
-- `reports`：本地环境 doctor、构建、测试、资源和运行证据，不提交原始日志和头显截图；验证说明见 [docs/VALIDATION.md](docs/VALIDATION.md)，源码交付包保留已筛选的文本记录。
+- `reports`：本地环境 doctor、构建、测试、资源和运行证据；公开仓库及源码交付包不包含原始日志和头显截图。验证说明见 [docs/VALIDATION.md](docs/VALIDATION.md)。
 - `output/pair-*.png` 和 `output/pair-translation.mp4`：当前版本原生模拟器截图及选择/返回录屏。当前模拟器不支持 CLI 的 `--spatial` 截图参数，因此采用设备显示捕获。
 - `ASSET_REVIEW.md`：已确认素材、来源、许可及 Editor 服务失败的记录。太阳/行星/土星环贴图来自 Solar System Scope / INOVE，CC BY 4.0，地球合成同源云层；模型与自绘界面在本项目制作。
 
