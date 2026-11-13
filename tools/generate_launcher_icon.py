@@ -14,6 +14,7 @@ def render(body, size=1024, viewbox='0 0 512 512'):
 
 # Adaptive foreground uses 108/72 padding so the launcher crop preserves the approved proportions.
 (RES / 'drawable/orbit_icon_foreground.png').write_bytes(render(mark, viewbox='-128 -128 768 768'))
+(RES / 'drawable/orbit_brand_mark.png').write_bytes(render(mark, size=512))
 # PICO uses the existing circular scaffold SDF as one solid identity layer.
 spatial = render('<circle cx="256" cy="256" r="256" fill="#06111f"/>' + mark)
 (RES / 'drawable/icon_3d_layer_0.png').write_bytes(spatial)

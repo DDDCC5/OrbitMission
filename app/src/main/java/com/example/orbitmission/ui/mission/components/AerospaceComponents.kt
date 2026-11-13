@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -26,13 +25,13 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.Outline
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -40,8 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.IntOffset
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.orbitmission.R
@@ -94,15 +91,15 @@ private fun Modifier.aerospaceFrame(accent: Color = OrbitColors.cyan, selected: 
 
 @Composable
 fun MissionLogo(modifier: Modifier = Modifier) {
-    val bitmap=ImageBitmap.imageResource(R.drawable.orbit_logo)
-    // Approved source includes unused transparent margins; crop only at draw time.
-    val logo=remember(bitmap){BitmapPainter(bitmap,IntOffset(15,40),IntSize(493,160))}
-    Image(
-        painter = logo,
-        contentDescription = "轨道使命 / ORBIT MISSION",
-        modifier = modifier.defaultMinSize(minWidth = 340.dp, minHeight = 115.dp),
-        contentScale = ContentScale.Fit,
-    )
+    // Keep identity tied to the system locale, independently of saved mission-language preferences.
+    Row(modifier = modifier.defaultMinSize(minWidth = 340.dp).height(200.dp),
+        horizontalArrangement = Arrangement.spacedBy(20.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically) {
+        Image(bitmap = ImageBitmap.imageResource(R.drawable.orbit_brand_mark),
+            contentDescription = null, modifier = Modifier.size(180.dp), contentScale = ContentScale.Fit)
+        Text(stringResource(R.string.app_name), color = OrbitColors.foreground,
+            style = PicoTheme.typography.titleLarge.copy(fontSize = 40.sp), maxLines = 1)
+    }
 }
 
 @Composable

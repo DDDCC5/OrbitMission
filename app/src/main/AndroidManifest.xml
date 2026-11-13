@@ -17,6 +17,7 @@
 
         <activity
             android:name=".platform.LaunchActivity"
+            android:label="@string/app_name"
             android:exported="true"
             android:theme="@style/Theme.OrbitMissionTheme">
             <intent-filter>

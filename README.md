@@ -12,7 +12,7 @@ pico-cli app install app/build/outputs/apk/debug/app-debug.apk --device emulator
 pico-cli app launch com.example.orbitmission --device emulator-5554
 ```
 
-当前版本为 **1.3.1（versionCode 5）**。可安装 APK、源码交付包及效果录屏见 [GitHub Releases](https://github.com/DDDCC5/OrbitMission/releases)。本机构建交付文件位于 `output/OrbitMission-debug.apk`。平台需要 PICO OS 6 / Spatial 运行环境；普通 Android 手机不具备其空间运行服务。
+当前版本为 **1.3.2（versionCode 6）**。可安装 APK、源码交付包及效果录屏见 [GitHub Releases](https://github.com/DDDCC5/OrbitMission/releases)。本机构建交付文件位于 `output/OrbitMission-debug.apk`。平台需要 PICO OS 6 / Spatial 运行环境；普通 Android 手机不具备其空间运行服务。
 
 ## 操作
 
@@ -51,3 +51,7 @@ pico-cli app launch com.example.orbitmission --device emulator-5554
 ## 1.1 历史修复（其日冕及放大任务视图已在 1.2 删除）
 
 Logo/教程距前方 1.15 m；左右仪表前向距离 1.35 m，并分别放大 1.3 倍和 1.2 倍；中间信息前向距离 1.30 m。总览使用太阳及行星真实半径比例，任务视图放大并明确标注。太阳采用 12 组曲线日珥细丝、柔和日冕外晕和沿弧线流动的等离子体光点，替换旧版硬质突起。此为科学形态参考的实时示意效果，不是太阳磁流体仿真。
+
+## 1.3.2 系统语言名称修复
+
+修复 1.3.1 开场仍使用烘焙中英文的旧 Logo 图片的问题。安装入口、开场单一标题和加载名称统一读取系统语言资源：中文系统仅显示「轨道使命」，英文系统仅显示「Orbit Mission」。开场沿用确认的无文字图标，应用内任务语言设置继续独立生效。删除旧双语图片及双语无障碍描述，并显式指定启动 Activity 的本地化名称。新增实体设备 Android 回归测试，覆盖 zh-CN、zh-TW、zh-HK、zh-SG、en-US、en-GB；原生用例 2 项及 JVM 测试 39 项通过。

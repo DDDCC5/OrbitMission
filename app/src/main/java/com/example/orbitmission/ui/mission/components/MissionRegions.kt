@@ -6,6 +6,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import com.example.orbitmission.R
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -31,7 +33,7 @@ internal fun MainPanel(state:MissionUiState,vm:MissionViewModel,onEnableEye:()->
         listOf(state.preferences.music,state.preferences.voice,state.preferences.sfx),vm::setAudio,
         vm::toggleSettings,text("back"),Modifier.width(540.dp),title=text("settings"),languageTitle=text("language"),onLabel=text("on"),offLabel=text("off"));MissionButton(text("enable_eye"),onEnableEye,Modifier.width(540.dp))};return}
     when(state.phase){
-        MissionPhase.LOADING->Column {MissionLogo(Modifier.width(620.dp));InstructionPanel("${text("app_name")}  ${state.loadedCount}/10",modifier=Modifier.width(620.dp))}
+        MissionPhase.LOADING->Column {MissionLogo(Modifier.width(620.dp));InstructionPanel("${stringResource(R.string.app_name)}  ${state.loadedCount}/10",modifier=Modifier.width(620.dp))}
         MissionPhase.SPLASH->MissionLogo(Modifier.width(620.dp).graphicsLayer {alpha=if(state.phaseSeconds<4)1f else (5-state.phaseSeconds).coerceIn(0.0,1.0).toFloat()})
         MissionPhase.TUTORIAL->BriefingPanel(text("tutorial"),listOf(text("tutorial_select"),text("tutorial_grab"),text("tutorial_thrust")),text("continue"),vm::finishTutorial,Modifier.width(760.dp))
         MissionPhase.FAILURE->ResultPanel(text("mission_failure"),text(when(state.flight?.status){FlightStatus.COLLISION->"collision";FlightStatus.ESCAPED->"escaped";else->"timeout"}),text("retry"),text("other_planet"),vm::retry,vm::chooseOtherPlanet,modifier=Modifier.width(640.dp))
