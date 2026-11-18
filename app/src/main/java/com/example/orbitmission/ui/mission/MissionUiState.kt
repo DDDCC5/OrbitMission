@@ -6,6 +6,7 @@ data class MissionUiState(val phase:MissionPhase=MissionPhase.LOADING,val phaseS
     val preferences:MissionPreferences=MissionPreferences(),val selectedPlanet:Planet?=null,
     val hoveredPlanet:Planet?=null,val gazeProgress:Float=0f,val flight:FlightSnapshot?=null,
     val settingsOpen:Boolean=false,val paused:Boolean=false,val grabbing:Boolean=false,
+    val startupAligned:Boolean=false,val handTrackingAvailable:Boolean=false,
     val mode:MissionMode=MissionMode.GUIDED,val placementConfirmed:Boolean=false,
     val velocityAdjusted:Boolean=false,val aiming:Boolean=false,val launchSpeedRatio:Double=.88,
     val prediction:OrbitPrediction?=null,val predictionPending:Boolean=false,val thrustCommand:Double=0.0,val thrustDirection:Int=1,

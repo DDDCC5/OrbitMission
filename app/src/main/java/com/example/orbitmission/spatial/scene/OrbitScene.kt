@@ -30,6 +30,9 @@ import com.pico.spatial.core.math.Vector3
 import com.example.orbitmission.domain.model.*
 import com.example.orbitmission.domain.usecase.InputArbitrationUseCase
 import com.example.orbitmission.domain.usecase.OrbitAssistUseCase
+import com.example.orbitmission.domain.usecase.ColdStartAnchorUseCase
+import com.example.orbitmission.domain.usecase.PinchVelocityUseCase
+import com.example.orbitmission.domain.usecase.PinchSample
 import com.example.orbitmission.domain.usecase.GrabAction
 import com.example.orbitmission.domain.usecase.CelestialFocusUseCase
 import com.example.orbitmission.ui.mission.MissionViewModel
@@ -43,7 +46,13 @@ import kotlin.math.*
 
 /** Identity owner is Stage space, right handed meters. Physics positions never enter ECS unscaled. */
 class OrbitScene(private val context:Context,private val vm:MissionViewModel):Closeable {
+    val worldOwner=Entity().apply {setName("OrbitTrackingReference")}
     val placementOwner=Entity().apply {setName("OrbitMissionOwner")}
+    init {worldOwner.addChild(placementOwner)}
+    private val startup=ColdStartAnchorUseCase()
+    private val handDrag=PinchVelocityUseCase()
+    private var handAiming=false
+    private var attached=false
     val input=SpatialInputController(context)
     val audio=MissionAudio()
     private val bodies=mutableMapOf<Planet,Entity>()
@@ -92,7 +101,8 @@ class OrbitScene(private val context:Context,private val vm:MissionViewModel):Cl
     private var guidePlanet:Planet?=null
 
     suspend fun initialize(addEntity:(Entity)->Unit) {
-        addEntity(placementOwner)
+        addEntity(worldOwner)
+        attached=true;input.start()
         // Main-thread native construction is staged; decoding muted textures is the only IO work.
         environment()
         val s=Entity.loadSuspend("asset://models/sun.glb");s.setName("Sun");placementOwner.addChild(s);sun=s
@@ -136,7 +146,7 @@ class OrbitScene(private val context:Context,private val vm:MissionViewModel):Cl
     fun attachPanel(id:String,entity:Entity?) {
         if(entity==null)return
         placementOwner.addChild(entity);panels[id]=entity
-        val location=when(id){"telemetry"->Vector3(-.62f,1.60f,-1.35f);"controls"->Vector3(.62f,1.60f,-1.35f);"prompt"->Vector3(0f,1.02f,-1.30f);else->Vector3(0f,1.62f,-1.15f)}
+        val location=when(id){"telemetry"->Vector3(-.62f,1.60f,-1.35f);"controls"->Vector3(.62f,1.60f,-1.35f);"prompt"->Vector3(0f,1.02f,-1.30f);else->Vector3(0f,1.55f,-1.15f)}
         transform(entity).setPosition(location)
         val scale=when(id){"telemetry"->1.30f;"controls"->1.20f;"prompt"->1.30f;else->1.20f}
         transform(entity).setScaleVector(Vector3(scale,scale,scale))
@@ -163,28 +173,59 @@ class OrbitScene(private val context:Context,private val vm:MissionViewModel):Cl
         saturation[p]=full
     }
     fun tick(dt:Double) {
-        if(!ready||disposed)return
+        if(disposed || !attached)return
         val state=vm.currentState
         panels["controls"]?.enabled=!state.settingsOpen && state.phase !in listOf(MissionPhase.SPLASH,MissionPhase.LOADING,MissionPhase.ASSEMBLING)
         panels["telemetry"]?.enabled=!state.settingsOpen && !state.sceneTransitioning && state.phase in listOf(MissionPhase.PLACEMENT,MissionPhase.FLYING,MissionPhase.SUCCESS)
         panels["prompt"]?.enabled=!state.settingsOpen
-        if(state.paused||state.settingsOpen){if(!suspended){input.stop();audio.pause();grabbed=false;aiming=false;arbitration.reset();vm.setGrabbing(false);vm.setAiming(false);previousGrip=false;previousConfirm=false;suspended=true};return}
+        if(state.paused||state.settingsOpen){if(!suspended){input.stop();audio.pause();grabbed=false;aiming=false;handAiming=false;handDrag.reset();arbitration.reset();vm.setGrabbing(false);vm.setAiming(false);previousGrip=false;previousConfirm=false;suspended=true};return}
         if(suspended){input.start();audio.resume();suspended=false}
+        val raw=input.sample()
+        if(!alignAtColdStart(raw,dt))return
+        if(!ready)return
         clock+=dt
         vm.tick(dt)
         val now=vm.currentState
-        val frame=input.sample()
+        val frame=ownerInput(raw)
+        vm.setHandAvailability(frame.handTrackingAvailable)
         if(now.phase!=previousPhase || now.language!=previousLanguage){onPhase(now.phase);previousPhase=now.phase;previousLanguage=now.language}
         if(now.preferences!=previousPreferences){audio.setEnabled(now.preferences.music,now.preferences.voice,now.preferences.sfx);previousPreferences=now.preferences}
         updateBodies(dt)
-        if(!now.sceneTransitioning)when(now.phase){MissionPhase.SELECTING->select(frame,dt);MissionPhase.PLACEMENT->place(frame);MissionPhase.FLYING,MissionPhase.SUCCESS->flight(frame,dt);else->Unit}
+        if(!now.sceneTransitioning)when(now.phase){MissionPhase.SELECTING->select(frame,dt);MissionPhase.PLACEMENT->place(frame,dt);MissionPhase.FLYING,MissionPhase.SUCCESS->flight(frame,dt);else->Unit}
         if(now.phase !in listOf(MissionPhase.FLYING,MissionPhase.SUCCESS))audio.setEngine(false,center)
         updatePlanningAids()
         previousConfirm=frame.confirmPressed;previousGrip=frame.gripPressed
         panels["telemetry"]?.enabled=!now.sceneTransitioning && now.phase in listOf(MissionPhase.PLACEMENT,MissionPhase.FLYING,MissionPhase.SUCCESS)
         panels["controls"]?.enabled=now.phase !in listOf(MissionPhase.SPLASH,MissionPhase.LOADING,MissionPhase.ASSEMBLING)
     }
+    private fun alignAtColdStart(frame:InputFrame,dt:Double):Boolean {
+        if(startup.anchor!=null)return true
+        val head=frame.head
+        val position=head?.let {worldOwner.convertPositionFrom(it.position,null)}
+        val forward=head?.let {worldOwner.convertRotationFrom(it.rotation,null).rotateVector(Vector3(0f,0f,-1f))}
+        fun domain(v:Vector3?)=v?.let {Vector3D(it.x.toDouble(),it.y.toDouble(),it.z.toDouble())}
+        val anchor=startup.observe(domain(position),domain(forward),dt,head?.sampleId)?:return false
+        transform(placementOwner).setPosition(vector(anchor.position))
+        transform(placementOwner).setQuaternion(Quat(0f,sin(anchor.yawRadians/2).toFloat(),0f,cos(anchor.yawRadians/2).toFloat()))
+        placementOwner.enabled=true;vm.startupAligned()
+        Log.i("OrbitStartup","aligned head=$position forward=$forward root=${anchor.position} yaw=${anchor.yawRadians}")
+        return true
+    }
+    private fun ownerRay(ray:InputRay?):InputRay? {
+        ray?:return null
+        val origin=placementOwner.convertPositionFrom(ray.origin,null)
+        val end=placementOwner.convertPositionFrom(Vector3(ray.origin.x+ray.direction.x,ray.origin.y+ray.direction.y,ray.origin.z+ray.direction.z),null)
+        val dx=end.x-origin.x;val dy=end.y-origin.y;val dz=end.z-origin.z
+        val length=sqrt(dx*dx+dy*dy+dz*dz)
+        if(length<.0001f || !length.isFinite())return null
+        return InputRay(origin,Vector3(dx/length,dy/length,dz/length))
+    }
+    private fun ownerInput(frame:InputFrame)=frame.copy(
+        controller=ownerRay(frame.controller),gaze=ownerRay(frame.gaze),
+        controllerRotation=frame.controllerRotation?.let {placementOwner.convertRotationFrom(it,null)},
+        hands=frame.hands.map {it.copy(position=placementOwner.convertPositionFrom(it.position,null),aim=ownerRay(it.aim))})
     private fun onPhase(phase:MissionPhase){
+        handDrag.reset();handAiming=false;vm.setAiming(false)
         val selected=vm.currentState.selectedPlanet
         if(phase==MissionPhase.SELECTING){arbitration.reset();grabbed=false;eyeTarget=null;hoverSeconds=0.0;lastHover=null;trail.forEach {it.enabled=false};flightMode=false;audio.playVoice(vm.currentState.language.tag,"select_planet")}
         if(phase==MissionPhase.PLACEMENT){grabbed=false;trail.forEach {it.enabled=false};trailIndex=0;audio.playVoice(vm.currentState.language.tag,"place_rocket")}
@@ -262,7 +303,7 @@ class OrbitScene(private val context:Context,private val vm:MissionViewModel):Cl
             val physical=vm.placementPosition();val end=velocityEndpoint()
             if(planet!=null && physical!=null && end!=null){
                 val start=toDisplay(physical,planet)
-                velocityHandle?.let {transform(it).setPosition(end);val scale=if(aiming || hoveringHandle)1.35f else 1f;transform(it).setScaleVector(Vector3(scale,scale,scale))}
+                velocityHandle?.let {transform(it).setPosition(end);val scale=if(aiming || handAiming || hoveringHandle)1.35f else 1f;transform(it).setScaleVector(Vector3(scale,scale,scale))}
                 velocityArrow.forEachIndexed {index,e->val t=index.toFloat()/velocityArrow.size;transform(e).setPosition(Vector3(start.x+(end.x-start.x)*t,start.y+(end.y-start.y)*t,start.z+(end.z-start.z)*t))}
             }
         }
@@ -280,12 +321,28 @@ class OrbitScene(private val context:Context,private val vm:MissionViewModel):Cl
             lastPrediction=forecast
         }
     }
-    private fun place(frame:InputFrame){
+    private fun place(frame:InputFrame,dt:Double){
         val r=rocket?:return;val selected=vm.currentState.selectedPlanet?:return;val ray=frame.controller
         if(aiming && !vm.currentState.aiming){aiming=false;arbitration.reset()}
         if(grabbed && !vm.currentState.grabbing){grabbed=false;arbitration.reset()}
-        hoveringHandle=ray?.let {sample->velocityEndpoint()?.let {raySphere(sample,it,.045f)!=null}}?:false
-        if(frame.gripPressed&&!previousGrip && ray!=null){
+        val tip=velocityEndpoint()
+        hoveringHandle=(listOfNotNull(ray)+frame.hands.mapNotNull {it.aim}).any {sample->tip?.let {raySphere(sample,it,.055f)!=null}?:false}
+        if(handAiming && !vm.currentState.aiming){handDrag.reset();handAiming=false}
+        if(!grabbed && !aiming && tip!=null){
+            fun d(v:Vector3)=Vector3D(v.x.toDouble(),v.y.toDouble(),v.z.toDouble())
+            val result=handDrag.update(frame.hands.map {PinchSample(it.hand,d(it.position),it.strength,it.aim?.origin?.let(::d),it.aim?.direction?.let(::d))},d(tip),dt)
+            handAiming=result.activeHand!=null
+            if(result.started){vm.setAiming(true);audio.playEffect("button_click")}
+            result.tip?.let {end->
+                val physical=vm.placementPosition()
+                if(physical!=null){val start=d(toDisplay(physical,selected));val delta=end-start
+                    val circular=vm.launchVelocity().length()/vm.currentState.launchSpeedRatio
+                    if(delta.length()>.025)vm.setLaunchVelocity(delta.normalized()*(circular*(delta.length()/.22).coerceIn(.35,1.6)))
+                }
+            }
+            if(result.released || result.cancelled){vm.setAiming(false);audio.playEffect("button_click")}
+        }
+        if(!handAiming && frame.gripPressed&&!previousGrip && ray!=null){
             val handleHit=velocityEndpoint()?.let {raySphere(ray,it,.045f)}
             val rocketHit=raySphere(ray,transform(r).position,max(.04f,planetRadius*.45f))
             if(handleHit!=null && (rocketHit==null || handleHit<rocketHit)){
@@ -352,6 +409,6 @@ class OrbitScene(private val context:Context,private val vm:MissionViewModel):Cl
     private fun transform(e:Entity)=e.components[TransformComponent::class.java]?:error("Missing transform")
     private fun descendants(root:Entity):List<Entity> = listOf(root)+root.getChildren().flatMap {descendants(it)}
     private fun logBounds(){(listOfNotNull(sun,rocket)+bodies.values).forEach {Log.i("OrbitMission","bounds ${it.getName()} ${it.getVisualBounds(placementOwner)}")}}
-    fun pause(){suspended=true;grabbed=false;aiming=false;vm.setAiming(false);arbitration.reset();vm.setGrabbing(false);input.stop();audio.pause();vm.setThrust(false);vm.setControllerThrust(false);previousGrip=false;previousConfirm=false}
-    override fun close(){if(disposed)return;disposed=true;input.close();audio.close();placementOwner.destroy();resources.reversed().forEach {runCatching {it.close()}};resources.clear();bodies.clear();panels.clear()}
+    fun pause(){suspended=true;grabbed=false;aiming=false;handAiming=false;handDrag.reset();vm.setAiming(false);arbitration.reset();vm.setGrabbing(false);input.stop();audio.pause();vm.setThrust(false);vm.setControllerThrust(false);previousGrip=false;previousConfirm=false}
+    override fun close(){if(disposed)return;disposed=true;input.close();audio.close();worldOwner.destroy();resources.reversed().forEach {runCatching {it.close()}};resources.clear();bodies.clear();panels.clear()}
 }

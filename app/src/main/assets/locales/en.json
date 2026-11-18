@@ -26,7 +26,7 @@
   "tutorial": "Flight briefing",
   "skip": "Skip tutorial",
   "tutorial_select": "Look at a planet for 2 seconds, or point and confirm with your controller.",
-  "tutorial_grab": "Grip the rocket or gold velocity tip. Release to place or aim, then confirm launch separately.",
+  "tutorial_grab": "Confirm the rocket position, then aim at the gold tip and pinch-drag to set speed and angle. Controller grip-drag also works.",
   "tutorial_thrust": "Use brief boost or brake burns to get a green forecast, then coast for a full revolution.",
   "timeout": "The 90-second mission window has ended",
   "collision": "The rocket collided with a celestial body",
@@ -71,11 +71,11 @@
   "plan_impact": "RED - impact predicted",
   "plan_escape": "RED - planetary escape",
   "forecast_coast": "Engine-off forecast; thrust changes the path",
-  "arrow_hint": "Grip the gold tip: direction aims, length sets speed",
+  "arrow_hint": "Pinch the gold tip: extend or shorten the arrow for speed, change its direction to aim.",
   "lesson_place": "01 PLACE: grip and move the rocket, then release. Or confirm its current position.",
   "lesson_grabbing": "PLACING: release the grip to place. Launch requires separate confirmation.",
-  "lesson_aiming": "AIMING: drag the gold tip and watch the predicted path.",
-  "lesson_aim": "02 AIM: drag the gold tip or use fine controls to set launch velocity.",
+  "lesson_aiming": "AIMING: pinch and move to adjust speed and angle. Release does not launch.",
+  "lesson_aim": "02 AIM: point your hand ray at the gold tip, pinch and move to set launch velocity.",
   "lesson_adjust": "02 ADJUST: make the forecast green. Challenge mode also allows risky launches.",
   "lesson_launch": "03 LAUNCH: the forecast is safe. Confirm launch to begin.",
   "lesson_burn": "04 CORRECT: try a short boost or brake pulse and observe the change.",
@@ -86,5 +86,8 @@
   "escape_help": "The rocket left the boundary. Try a lower launch speed or a braking burn.",
   "timeout_help": "Time is up. Get a green forecast, then coast through one stable revolution.",
   "initial_speed": "Launch speed",
-  "forecast_updating": "Updating forecast..."
+  "forecast_updating": "Updating forecast...",
+  "launch_angle": "Launch angle",
+  "hand_aim_help": "Aim your hand ray at the gold tip, pinch, then move your hand.",
+  "hand_aim_fallback": "Enable system hand tracking to pinch-drag, or grip-drag the tip with a controller."
 }

@@ -27,6 +27,7 @@ import com.example.orbitmission.ui.mission.MissionViewModel
 
 @Composable
 internal fun MainPanel(state:MissionUiState,vm:MissionViewModel,onEnableEye:()->Unit) {
+    if(!state.startupAligned)return // Keep the native attachment measured; never hide its ancestor Entity.
     val text:(String)->String=vm::text
     if(state.settingsOpen){Column {SettingsPanel(listOf("简体中文","繁體中文","English"),state.language.ordinal,
         {vm.setLanguage(AppLanguage.entries[it])},listOf(text("music"),text("voice"),text("sound")),

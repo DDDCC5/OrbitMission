@@ -34,14 +34,11 @@ internal fun LaunchPlanningControls(state:MissionUiState,vm:MissionViewModel) {
     }else{
         Text(vm.text("launch_speed")+String.format(Locale.ROOT," %.0f%%",state.launchSpeedRatio*100),
             color=OrbitColors.foreground,style=PicoTheme.typography.bodyLarge.copy(fontSize=20.sp))
-        Row(horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-            MissionButton(vm.text("speed_down"),{vm.adjustLaunchSpeed(-.05)},Modifier.weight(1f),enabled)
-            MissionButton(vm.text("speed_up"),{vm.adjustLaunchSpeed(.05)},Modifier.weight(1f),enabled)
-        }
-        Row(horizontalArrangement=Arrangement.spacedBy(16.dp)) {
-            MissionButton(vm.text("turn_left"),{vm.rotateLaunch(-5.0)},Modifier.weight(1f),enabled)
-            MissionButton(vm.text("turn_right"),{vm.rotateLaunch(5.0)},Modifier.weight(1f),enabled)
-        }
+        val velocity=vm.launchVelocity()
+        Text(vm.text("launch_angle")+String.format(Locale.ROOT," %+.0f°",kotlin.math.atan2(velocity.x,velocity.y)*180/kotlin.math.PI),
+            color=OrbitColors.foreground,style=PicoTheme.typography.bodyLarge.copy(fontSize=20.sp))
+        Text(vm.text(if(state.handTrackingAvailable)"hand_aim_help" else "hand_aim_fallback"),
+            color=OrbitColors.cyan,style=PicoTheme.typography.bodyLarge.copy(fontSize=18.sp))
     }
     PredictionReadout(state,vm)
     MissionButton(vm.text("launch_confirm"),vm::launch,Modifier.fillMaxWidth(),state.canLaunch)

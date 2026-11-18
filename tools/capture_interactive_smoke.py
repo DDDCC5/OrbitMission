@@ -1,11 +1,11 @@
 from pathlib import Path
 import subprocess,time,json,uuid,argparse
-parser=argparse.ArgumentParser();parser.add_argument("--cli",default="pico-cli");parser.add_argument("--device",default="emulator-5554");parser.add_argument("--out",default="output/interaction-1.4.0-final");parser.add_argument("--size",default="1920x1080");args=parser.parse_args();capture_size=args.size
+parser=argparse.ArgumentParser();parser.add_argument("--cli",default="pico-cli");parser.add_argument("--device",default="emulator-5554");parser.add_argument("--out",default="output/interaction-1.5.0-native");parser.add_argument("--size",default="1920x1080");parser.add_argument("--classes",default="com.example.orbitmission.StartupRuntimeTest,com.example.orbitmission.InteractiveRuntimeTest,com.example.orbitmission.AppIdentityTest");args=parser.parse_args();capture_size=args.size;test_classes=args.classes
 cli=args.cli
 target=args.device;run='interactive-'+uuid.uuid4().hex[:8]
 out=Path(args.out);out.mkdir(exist_ok=True)
-log=open('reports/interaction-native-final.log','w')
-p=subprocess.Popen([cli,'shell','am','instrument','-w','-e','class','com.example.orbitmission.InteractiveRuntimeTest,com.example.orbitmission.AppIdentityTest','-e','evidenceRun',run,'com.example.orbitmission.test/androidx.test.runner.AndroidJUnitRunner','--device',target],stdout=log,stderr=subprocess.STDOUT)
+log=open('reports/gesture-native-final.log','w')
+p=subprocess.Popen([cli,'shell','am','instrument','-w','-e','class',test_classes,'-e','evidenceRun',run,'com.example.orbitmission.test/androidx.test.runner.AndroidJUnitRunner','--device',target],stdout=log,stderr=subprocess.STDOUT)
 seen={};end=time.monotonic()+160
 while time.monotonic()<end:
  r=subprocess.run([cli,'shell','run-as','com.example.orbitmission','cat','cache/interactive-state.txt','--device',target],capture_output=True,text=True,timeout=10)
@@ -25,4 +25,4 @@ while time.monotonic()<end:
  time.sleep(.5)
 if p.poll() is None:print('Native test still running',flush=True)
 else:print('Instrumentation exit',p.returncode,flush=True)
-log.close();Path('reports/interaction-captures-final.json').write_text(json.dumps(seen,ensure_ascii=False,indent=2))
+log.close();Path('reports/gesture-captures-final.json').write_text(json.dumps(seen,ensure_ascii=False,indent=2))

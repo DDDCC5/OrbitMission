@@ -70,7 +70,7 @@ fun MissionScreen() {
         initial={content,attachments->
             try {
                 // Make attachment loading/error states visible before any asynchronous asset load.
-                content.addEntity(scene.placementOwner)
+                content.addEntity(scene.worldOwner)
                 listOf("main","telemetry","controls","prompt").forEach {scene.attachPanel(it,attachments.entity(it))}
                 scene.initialize { /* owner was already attached above */ }
             }catch(e:CancellationException){throw e}

@@ -39,6 +39,8 @@ class MissionViewModel(private val session:MissionSessionUseCase):ViewModel() {
         MissionEvent.FinishTutorial->finishTutorial()
     }}
     fun text(key:String)=session.text(currentState.language,key)
+    fun startupAligned(){mutableState.value=currentState.copy(startupAligned=true)}
+    fun setHandAvailability(available:Boolean){if(currentState.handTrackingAvailable!=available)mutableState.value=currentState.copy(handTrackingAvailable=available)}
     fun loading(count:Int){mutableState.value=currentState.copy(loadedCount=count)}
     fun assetsReady(){phaseClock=0.0;mutableState.value=currentState.copy(phase=MissionPhase.SPLASH,phaseSeconds=0.0,loadedCount=10)}
     fun failLoading(message:String){mutableState.value=currentState.copy(phase=MissionPhase.ERROR,error=message)}
