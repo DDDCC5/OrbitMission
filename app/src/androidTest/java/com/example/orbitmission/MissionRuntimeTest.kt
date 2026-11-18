@@ -47,7 +47,7 @@ class MissionRuntimeTest {
         marker("SELECT_READY")
         onMain {vm.selectPlanet(Planet.EARTH);assertEquals(MissionPhase.PLACEMENT,vm.currentState.phase)}
         marker("PLACEMENT_READY")
-        onMain {vm.launch()}
+        onMain {vm.confirmPlacement();vm.adjustLaunchSpeed(.05);vm.tick(.26);vm.launch()}
         await {vm.currentState.phase==MissionPhase.FLYING && (vm.currentFlight?.elapsedSeconds?:0.0)>2}
         marker("FLIGHT_READY",7000)
         await {vm.currentState.phase==MissionPhase.SUCCESS}

@@ -65,7 +65,9 @@ class GravitySimulationUseCase(val planet: Planet, val rocketMassKg: Double = 10
      * Invalid deltas (nonpositive, nonfinite, or over one hour) are ignored, so a corrupt
      * clock cannot monopolize the UI thread. Terminal failures freeze until launch().
      */
-    fun step(wallDeltaSeconds: Double, thrust: Boolean): FlightSnapshot {
+    fun step(wallDeltaSeconds: Double, thrust: Boolean): FlightSnapshot = step(wallDeltaSeconds, if(thrust) 1.0 else 0.0)
+
+    fun step(wallDeltaSeconds: Double, thrust: Double): FlightSnapshot {
         if(!wallDeltaSeconds.isFinite() || wallDeltaSeconds<=0.0 || wallDeltaSeconds>3600.0 ||
             status !in listOf(FlightStatus.FLYING,FlightStatus.SUCCESS)) return snapshot()
         val wallBudget=if(status==FlightStatus.SUCCESS) wallDeltaSeconds else min(wallDeltaSeconds,90.0-elapsed)
@@ -118,9 +120,13 @@ class GravitySimulationUseCase(val planet: Planet, val rocketMassKg: Double = 10
         return toward.normalized()*(gm/(radius*radius))
     }
 
-    // Constant acceleration along instantaneous velocity, with no fuel limit (2% circular speed / simulated second).
-    private fun thrustAcceleration(v: Vector3D, enabled: Boolean): Vector3D =
-        if(enabled) v.normalized()*(sqrt(mu/recommendedRadius)*0.02) else ZERO
+    // Eight percent of the recommended circular speed per WALL second, independent of planet time scale.
+    private fun thrustAcceleration(v: Vector3D, command: Double): Vector3D {
+        val signed=if(command.isFinite()) command.coerceIn(-1.0,1.0) else 0.0
+        val circular=sqrt(mu/recommendedRadius)
+        if(signed<0 && v.length()<circular*.01) return ZERO
+        return v.normalized()*(circular*.08/simulationTimeScale*signed)
+    }
 
     /** Eccentricity and periapsis from planet-relative r and v (no heliocentric velocity mix). */
     private fun elements(): Pair<Double,Double> {

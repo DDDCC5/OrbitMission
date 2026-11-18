@@ -110,7 +110,7 @@ class GravitySimulationUseCaseTest {
         val p=sim.recommendedPosition(); sim.launch(p,sim.circularVelocity(p))
         sim.step(10.0,false)
         assertTrue(sim.snapshot().orbitProgressDegrees>110.0)
-        sim.step(0.5,true)
+        sim.step(3.0,true)
         assertTrue(sim.snapshot().eccentricity>0.2)
         assertEquals(0.0,sim.snapshot().orbitProgressDegrees,0.0)
     }

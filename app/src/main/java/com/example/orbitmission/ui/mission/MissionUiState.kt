@@ -6,8 +6,15 @@ data class MissionUiState(val phase:MissionPhase=MissionPhase.LOADING,val phaseS
     val preferences:MissionPreferences=MissionPreferences(),val selectedPlanet:Planet?=null,
     val hoveredPlanet:Planet?=null,val gazeProgress:Float=0f,val flight:FlightSnapshot?=null,
     val settingsOpen:Boolean=false,val paused:Boolean=false,val grabbing:Boolean=false,
+    val mode:MissionMode=MissionMode.GUIDED,val placementConfirmed:Boolean=false,
+    val velocityAdjusted:Boolean=false,val aiming:Boolean=false,val launchSpeedRatio:Double=.88,
+    val prediction:OrbitPrediction?=null,val predictionPending:Boolean=false,val thrustCommand:Double=0.0,val thrustDirection:Int=1,
+    val correctionUsed:Boolean=false,
     val error:String?=null,val loadedCount:Int=0,val thrust:Boolean=false,val sceneTransitioning:Boolean=false) {
     val language get()=preferences.language
+    val canLaunch get()=phase==MissionPhase.PLACEMENT && !sceneTransitioning && !paused && !settingsOpen &&
+        placementConfirmed && velocityAdjusted && !grabbing && !aiming && !predictionPending &&
+        (mode==MissionMode.CHALLENGE || prediction?.quality==OrbitQuality.SAFE)
 }
 
 sealed interface MissionEvent {

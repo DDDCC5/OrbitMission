@@ -12,6 +12,8 @@ object OrbitColors {
     val amber = Color(0xFFFFBF63) // design-style: fixed-figma-color approved-components-board
     val foreground = Color(0xFFE9F7FF) // design-style: fixed-figma-color approved-components-board
     val muted = Color(0xFF87A8BA) // design-style: fixed-figma-color approved-components-board
+    val danger = Color(0xFFFF7070) // design-style: fixed-figma-color interactive-orbit-danger
+    val safe = Color(0xFF66F2A6) // design-style: fixed-figma-color interactive-orbit-safety
     val selected = Color(0xFF163544) // design-style: fixed-figma-color approved-components-board
 }
 

@@ -18,14 +18,14 @@ class MissionViewModelTest {
         val vm=model();vm.assetsReady();vm.tick(5.1);vm.tick(6.0)
         for(p in Planet.entries) {
             vm.selectPlanet(p);assertEquals(MissionPhase.PLACEMENT,vm.uiState.value.phase)
-            vm.tick(1.2);vm.launch();vm.tick(1.0);assertTrue(vm.uiState.value.flight!!.elapsedSeconds>0)
+            vm.tick(1.2);vm.confirmPlacement();vm.adjustLaunchSpeed(.05);vm.tick(.26);vm.launch();vm.tick(1.0);assertTrue(vm.uiState.value.flight!!.elapsedSeconds>0)
             vm.retry();assertEquals(MissionPhase.PLACEMENT,vm.uiState.value.phase)
             assertEquals(0.0,vm.uiState.value.flight!!.elapsedSeconds,0.0)
             vm.chooseOtherPlanet();assertEquals(MissionPhase.SELECTING,vm.uiState.value.phase);vm.tick(1.2)
         }
     }
     @Test fun `settings freezes clock and changing language shares chinese voice`() {
-        val vm=model();vm.assetsReady();vm.tick(5.1);vm.tick(6.0);vm.selectPlanet(Planet.EARTH);vm.tick(1.2);vm.launch()
+        val vm=model();vm.assetsReady();vm.tick(5.1);vm.tick(6.0);vm.selectPlanet(Planet.EARTH);vm.tick(1.2);vm.confirmPlacement();vm.adjustLaunchSpeed(.05);vm.tick(.26);vm.launch()
         vm.toggleSettings();vm.tick(40.0);assertEquals(0.0,vm.uiState.value.flight!!.elapsedSeconds,0.0)
         vm.setLanguage(AppLanguage.ZH_HANT);assertEquals("zh-Hans",vm.uiState.value.language.voiceFolder)
         vm.toggleSettings();vm.tick(1.0);assertTrue(vm.uiState.value.flight!!.elapsedSeconds>0)
@@ -36,14 +36,14 @@ class MissionViewModelTest {
         assertNull(vm.uiState.value.selectedPlanet);assertNull(vm.uiState.value.hoveredPlanet)
     }
     @Test fun `background pause does not consume mission clock`() {
-        val vm=model();vm.assetsReady();vm.tick(5.1);vm.tick(6.0);vm.selectPlanet(Planet.EARTH);vm.tick(1.2);vm.launch();vm.setActive(false);vm.tick(91.0)
+        val vm=model();vm.assetsReady();vm.tick(5.1);vm.tick(6.0);vm.selectPlanet(Planet.EARTH);vm.tick(1.2);vm.confirmPlacement();vm.adjustLaunchSpeed(.05);vm.tick(.26);vm.launch();vm.setActive(false);vm.tick(91.0)
         assertEquals(MissionPhase.FLYING,vm.uiState.value.phase);assertEquals(90.0,vm.uiState.value.flight!!.remainingSeconds,1e-8)
     }
     @Test fun `focus and return animations block launch and reselection until settled`() {
         val vm=model();vm.assetsReady();vm.tick(5.1);vm.tick(6.0)
         vm.selectPlanet(Planet.EARTH);assertTrue(vm.currentState.sceneTransitioning)
-        vm.launch();assertEquals(MissionPhase.PLACEMENT,vm.currentState.phase)
-        vm.tick(1.2);assertFalse(vm.currentState.sceneTransitioning);vm.launch()
+        vm.confirmPlacement();vm.adjustLaunchSpeed(.05);vm.tick(.26);vm.launch();assertEquals(MissionPhase.PLACEMENT,vm.currentState.phase)
+        vm.tick(1.2);assertFalse(vm.currentState.sceneTransitioning);vm.confirmPlacement();vm.adjustLaunchSpeed(.05);vm.tick(.26);vm.launch()
         assertEquals(MissionPhase.FLYING,vm.currentState.phase)
         vm.chooseOtherPlanet();vm.selectPlanet(Planet.MARS);assertNull(vm.currentState.selectedPlanet)
         vm.tick(1.2);vm.selectPlanet(Planet.MARS);assertEquals(Planet.MARS,vm.currentState.selectedPlanet)
